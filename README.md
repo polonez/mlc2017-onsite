@@ -8,6 +8,8 @@ The source code is originally from [mlc2017-onsite](https://github.com/machine-l
 
 The contest is to make a GAN(Generative Adversarial Network) and compete with the other participants.
 
+![images](gan/pics/workflow.png)
+
 My teamname was `etude` and the result can be found [here](http://challonge.com/ohwnzusj).
 
 ![image](screenshot/tournament_result.png)
@@ -18,8 +20,12 @@ Basically, the model is [DCGAN(Deep Convolutional Generative Adversarial Network
 
 ## Result
 
-After training this model (about 90k steps), some images from the generator is as follows.
+After training this model (about 90k steps), some (fake) images from the generator is as follows.
 
 ![image](out/185.png)
 
 ![image](out/185.png)
+
+While the original (training images or real images) images are as follows.
+
+![image](gan/pics/human_faces.png)
