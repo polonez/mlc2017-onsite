@@ -16,7 +16,7 @@ My teamname was `etude` and the result can be found [here](http://challonge.com/
 
 ## Model
 
-Basically, the model is [DCGAN(Deep Convolutional Generative Adversarial Network)](https://arxiv.org/abs/1511.06434).
+My model is based on [DCGAN(Deep Convolutional Generative Adversarial Network)](https://arxiv.org/abs/1511.06434) with some tweaks.
 
 ## Result
 
