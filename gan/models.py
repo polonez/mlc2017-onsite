@@ -104,7 +104,7 @@ class SampleDiscriminator(BaseModel):
     def run_model(self, model_input, is_training=True, **unused_params):
         with tf.variable_scope('discriminator', reuse=self.reuse):
             net = tf.reshape(model_input, [-1, 50, 50, 1])
-            # net = tf.image.resize_images(net, [64, 64])
+            net = tf.image.resize_images(net, [64, 64])
 
             net = tf.layers.conv2d(net, 64, [5, 5], (2, 2), padding='SAME',
                                    kernel_initializer=tf.random_normal_initializer(stddev=0.02),
@@ -119,6 +119,103 @@ class SampleDiscriminator(BaseModel):
             net = lrelu(net)
 
             net = tf.layers.conv2d(net, 256, [5, 5], (2, 2), padding='SAME',
+                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02),
+                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+            net = tf.layers.batch_normalization(net, training=True)
+            net = lrelu(net)
+
+            net = tf.layers.conv2d(net, 512, [5, 5], (2, 2), padding='SAME',
+                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02),
+                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+            net = tf.layers.batch_normalization(net, training=True)
+            net = lrelu(net)
+
+            net = tf.contrib.layers.flatten(net)
+            logits = tf.contrib.layers.fully_connected(net,
+                                                       1,
+                                                       activation_fn=None,
+                                                       weights_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+            predictions = lrelu(logits)
+            self.reuse = True
+            return {"logits": logits, "predictions": predictions}
+
+    def get_variables(self):
+        return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='tower/discriminator')
+
+
+class SmallerGenerator(BaseModel):
+    def __init__(self):
+        self.noise_input_size = 100
+
+    def create_model(self, output_size, **unused_params):
+        self.reuse = False
+
+    def run_model(self, model_input, is_training=True, **unused_params):
+        with tf.variable_scope('generator', reuse=self.reuse):
+            net = tf.contrib.layers.fully_connected(model_input,
+                                                    4*4*1024,
+                                                    activation_fn=tf.nn.sigmoid,
+                                                    weights_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+            net = tf.reshape(net, [-1, 4, 4, 1024])
+            net = tf.layers.batch_normalization(net, training=True)
+
+            # consider using tf.contrib.layers.conv2d_transpose on both side
+            # (generator and discriminator), because of initializer and weight
+            # regularizer
+            net = tf.layers.conv2d_transpose(net, 512, [3, 3], (2, 2), 'SAME',
+                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02),
+                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+            net = tf.layers.batch_normalization(net, training=True)
+            net = tf.nn.relu(net)
+
+            net = tf.layers.conv2d_transpose(net, 256, [5, 5], (2, 2), 'SAME',
+                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02),
+                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+            net = tf.layers.batch_normalization(net, training=True)
+            net = tf.nn.relu(net)
+
+            net = tf.layers.conv2d_transpose(net, 128, [3, 3], (2, 2), 'SAME',
+                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02),
+                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+            net = tf.layers.batch_normalization(net, training=True)
+            net = tf.nn.relu(net)
+
+            net = tf.layers.conv2d_transpose(net, 1, [5, 5], (2, 2), 'SAME',
+                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02),
+                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+
+            net = tf.image.resize_images(net, [50, 50])
+            net = tf.contrib.layers.flatten(net)
+            output = tf.nn.tanh(net)
+            self.reuse = True
+            return {"output": output}
+
+    def get_variables(self):
+        return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='tower/generator')
+
+
+class SmallerDiscriminator(BaseModel):
+    def create_model(self, input_size, **unused_params):
+        self.reuse = False
+
+    def run_model(self, model_input, is_training=True, **unused_params):
+        with tf.variable_scope('discriminator', reuse=self.reuse):
+            net = tf.reshape(model_input, [-1, 50, 50, 1])
+            net = tf.image.resize_images(net, [64, 64])
+
+            net = tf.layers.conv2d(net, 64, [3, 3], (2, 2), padding='SAME',
+                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02),
+                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+            net = tf.layers.batch_normalization(net, training=True)
+            net = lrelu(net)
+
+            net = tf.layers.conv2d(net, 128, [5, 5], (2, 2), padding='SAME',
+                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02),
+                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+            net = tf.layers.batch_normalization(net, training=True)
+            net = lrelu(net)
+
+            net = tf.layers.conv2d(net, 256, [3, 3], (2, 2), padding='SAME',
                                    kernel_initializer=tf.random_normal_initializer(stddev=0.02),
                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
             net = tf.layers.batch_normalization(net, training=True)
