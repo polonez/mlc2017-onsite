@@ -62,9 +62,6 @@ class SampleGenerator(BaseModel):
             net = tf.reshape(net, [-1, 4, 4, 1024])
             net = tf.layers.batch_normalization(net, training=True)
 
-            # consider using tf.contrib.layers.conv2d_transpose on both side
-            # (generator and discriminator), because of initializer and weight
-            # regularizer
             net = tf.layers.conv2d_transpose(net, 512, [5, 5], (2, 2), 'SAME',
                                              kernel_initializer=tf.random_normal_initializer(stddev=0.02),
                                              kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
@@ -154,29 +151,22 @@ class SmallerGenerator(BaseModel):
         with tf.variable_scope('generator', reuse=self.reuse):
             net = tf.contrib.layers.fully_connected(model_input,
                                                     4*4*1024,
-                                                    activation_fn=tf.nn.sigmoid,
-                                                    weights_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+                                                    activation_fn=tf.nn.sigmoid)
             net = tf.reshape(net, [-1, 4, 4, 1024])
             net = tf.layers.batch_normalization(net, training=True)
 
-            # consider using tf.contrib.layers.conv2d_transpose on both side
-            # (generator and discriminator), because of initializer and weight
-            # regularizer
             net = tf.layers.conv2d_transpose(net, 512, [3, 3], (2, 2), 'SAME',
-                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02),
-                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02))
             net = tf.layers.batch_normalization(net, training=True)
             net = tf.nn.relu(net)
 
             net = tf.layers.conv2d_transpose(net, 256, [5, 5], (2, 2), 'SAME',
-                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02),
-                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02))
             net = tf.layers.batch_normalization(net, training=True)
             net = tf.nn.relu(net)
 
             net = tf.layers.conv2d_transpose(net, 128, [3, 3], (2, 2), 'SAME',
-                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02),
-                                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+                                             kernel_initializer=tf.random_normal_initializer(stddev=0.02))
             net = tf.layers.batch_normalization(net, training=True)
             net = tf.nn.relu(net)
 
@@ -204,26 +194,22 @@ class SmallerDiscriminator(BaseModel):
             net = tf.image.resize_images(net, [64, 64])
 
             net = tf.layers.conv2d(net, 64, [3, 3], (2, 2), padding='SAME',
-                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02),
-                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02))
             net = tf.layers.batch_normalization(net, training=True)
             net = lrelu(net)
 
             net = tf.layers.conv2d(net, 128, [5, 5], (2, 2), padding='SAME',
-                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02),
-                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02))
             net = tf.layers.batch_normalization(net, training=True)
             net = lrelu(net)
 
             net = tf.layers.conv2d(net, 256, [3, 3], (2, 2), padding='SAME',
-                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02),
-                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02))
             net = tf.layers.batch_normalization(net, training=True)
             net = lrelu(net)
 
             net = tf.layers.conv2d(net, 512, [5, 5], (2, 2), padding='SAME',
-                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02),
-                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-8))
+                                   kernel_initializer=tf.random_normal_initializer(stddev=0.02))
             net = tf.layers.batch_normalization(net, training=True)
             net = lrelu(net)
 
